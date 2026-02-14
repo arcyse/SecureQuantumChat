@@ -78,4 +78,4 @@ Then open your browser to the local server (`http://localhost:5000`).
 
 ## License
 
-This project is released under the MIT License.
+This project is released under the GNU GENERAL PUBLIC LICENSE Version 3 - 29 June 2007.
