@@ -6,11 +6,100 @@
 <div class="container">
     <div style="margin-top: 5%;">
     <h1 class="title">Welcome to <br> <span class="text-transform"><span class="text-original">Schrödinger's</span><span class="text-hover">Super Secure</span></span> <span class="gif-underline">Quantum</span> Chat!</h1>
-    <p class="description">Join a chat room or create your own.<br>Connect with peers securely with the un-certainity of quantum mechanics!</p>
+    <p class="description">Join a chat room or create your own.<br>Connect with peers securely with the un-certainity of quantum mechanics! <br></p>
     </div>
-    <div class="landing-page">
-        <!-- Form for joining a room -->
-        <form method="post" class="form-container" id="join-room-form"> 
+<i class="description" style="font-size: 1.1em;">An open-source <u>proof of concept</u> designed to enable secure chat-rooms utilizing <u>quantum key distribution</u> and principles of <u>perfect secrecy</u>.</i>
+
+<!-- HOW IT WORKS SECTION -->
+<div style="width:100%; max-width:900px; margin:40px auto 20px auto; color:#ffffff;"> <!-- reduced bottom margin -->
+
+    <h2 class="subheading" style="font-family:'MarlinSoftSQ-ExtraBold', sans-serif; text-align:center; margin-bottom:30px; font-size:3em;">
+        How It Works ?
+    </h2>
+
+    <!-- STEP 1 -->
+    <div style="display:flex; align-items:center; margin-bottom:25px; font-weight: bold;">
+        <div style="
+            font-family:'MarlinSoftSQ-ExtraBold', sans-serif;
+            font-size:7em;
+            line-height:1;
+            margin-right:25px;
+            min-width:60px;
+        ">1</div>
+        <div>
+            <div class="subheading" style="font-size:1.4em; margin-bottom:6px; font-weight: bold;">
+                Create or Join
+            </div>
+            <div class="sub-desc" style="font-size:1em; opacity:0.9;">
+                Start a new room or enter a friend's 4-character code. Your browser establishes a secure WebSocket session with the server to begin key exchange.
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div style="display:flex; align-items:center; margin-bottom:25px; font-weight: bold;">
+        <div style="
+            font-family:'MarlinSoftSQ-ExtraBold', sans-serif;
+            font-size:7em;
+            line-height:1;
+            margin-right:25px;
+            min-width:60px;
+        ">2</div>
+        <div>
+            <div class="subheading" style="font-size:1.4em; margin-bottom:6px; font-weight: bold;">
+                QKD Handshake
+            </div>
+            <div class="sub-desc" style="font-size:1em; opacity:0.9;">
+                Using the BB84 protocol, random qubits are prepared, measured in random bases, sifted, error-checked (QBER), corrected (Cascade + BICONF), and privacy-amplified into a shared 256-bit secret key.
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div style="display:flex; align-items:center; margin-bottom:25px; font-weight: bold;">
+        <div style="
+            font-family:'MarlinSoftSQ-ExtraBold', sans-serif;
+            font-size:7em;
+            line-height:1;
+            margin-right:25px;
+            min-width:60px;
+        ">3</div>
+        <div>
+            <div class="subheading" style="font-size:1.4em; margin-bottom:6px; font-weight: bold;">
+                Chat Securely
+            </div>
+            <div class="sub-desc" style="font-size:1em; opacity:0.9;">
+                Each message is encrypted with a one-time XOR cipher using the quantum-generated key ensuring perfect secrecy for everyone in the room.
+            </div>
+        </div>
+    </div>
+
+    <!-- PRO TIP -->
+    <div style="
+        margin-top:20px;
+        padding:18px 22px;
+        border:1px solid rgba(255,255,255,0.25);
+        border-radius:12px;
+        font-family:'ABCFavoritMono-Regular', monospace;
+        font-size:0.95em;
+        background:rgba(255,255,255,0.05);
+    ">
+        💡 <strong>TIP:</strong> Click "QKD Debug" in the chat room to see the quantum key distribution in action!
+    </div>
+
+</div>
+
+<div class="landing-page" style="display:flex; flex-direction:column; margin-top:50px; margin-bottom:2px;">
+
+
+    <!-- Bottom row: two forms side by side -->
+    <div style="display:flex; justify-content:center; gap:30px; flex-wrap:wrap; max-width:1000px; margin:0 auto;">
+
+        <!-- Form 1: Join Room -->
+        <form method="post" class="form-container" id="join-room-form" style="flex:1; min-width:350px; max-width:450px; margin-bottom:0;"> 
+            <h3 style="font-family:'MarlinSoftSQ-Medium', sans-serif; font-size:1.3em; margin-bottom:10px; color:#ffffff;">
+                Join a Room
+            </h3>
             <div class="input-group">
                 <label for="name">Username</label>
                 <input type="text" id="name" placeholder="Pick a name!" name="name" value="{{ name }}" required/> 
@@ -24,8 +113,11 @@
             </div>
         </form>
 
-        <!-- Form for creating a room -->
-        <form method="post" class="form-container" id="create-room-form"> 
+        <!-- Form 2: Create Room -->
+        <form method="post" class="form-container" id="create-room-form" style="flex:1; min-width:350px; max-width:450px; margin-bottom:0;"> 
+            <h3 style="font-family:'MarlinSoftSQ-Medium', sans-serif; font-size:1.3em; margin-bottom:10px; color:#ffffff;">
+                Create a Room
+            </h3>
             <div class="input-group">
                 <label for="name">Username</label>
                 <input type="text" id="name-create" placeholder="Pick a name!" name="name" value="{{ name }}" required/> 
@@ -34,7 +126,9 @@
                 <button type="submit" name="create" class="create-btn create-room-btn">Create a Room</button>
             </div>
         </form>
+
     </div>
+</div>
 
     <!-- Display error if present -->
     {% if error %}
@@ -44,15 +138,15 @@
     {% endif %}
 
     <!-- Footer -->
-        <div class="footer" style="font-family:ABCFavoritMono-Bold; text-align: left; position: relative; padding: 20px; background-color: #f8f8f8;">
+        <div class="footer" style="margin-top:50px; padding:12px 20px; font-family:ABCFavoritMono-Bold; text-align: left; position: relative; background-color: #f8f8f8;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div style="display: flex; flex-direction: column; align-items: flex-start;"> <!-- Logo and copyright section -->
                     <div style="display: flex; align-items: center;">
                         <img src="../static/images/sqc-logo.png" alt="sqc-cat" style="width: 70px; height: auto; margin-right: 10px;">
-                        <h1 style="font-family: MarlinSoftSQ-ExtraBold;">Secure Quantum Chat</h1>
+                        <h1 style="font-family: MarlinSoftSQ-ExtraBold;">Secure Quantum Chat</h1> <span style="margin-left: 2em;"><a href="https://github.com/arcyse/SecureQuantumChat">Source Code</a></span>
                     </div>
                     <p style="margin-top: 10px;">
-                        <span style="display: inline; transform: scaleX(-1); font-size: 1.2em;">Ⓒ</span> Copyleft 2024 <br>
+                        <span style="display: inline; transform: scaleX(-1); font-size: 1.2em;">Ⓒ</span> Copyleft 2026 <br>
                         Made in Bengaluru with 💖
                     </p>
                 </div>
@@ -62,12 +156,12 @@
                         <h2 style="font-family: MarlinSoftSQ-Medium; border-bottom: 2px dashed #0d0065;">Company</h2>
                         <div style="display: flex; gap: 40px;">
                             <div class="flex flex-col">
-                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Blog</a> <br><br>
-                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Pricing</a>
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer" style="color: gray;">Blog</a> <br><br>
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer" style="color: gray;">Pricing</a>
                             </div>
                             <div class="flex flex-col">
-                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">About Us</a> <br><br>
-                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Contact us</a> <br><br>
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer" style="color: gray;">About Us</a> <br><br>
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer" style="color: gray;">Contact us</a> <br><br>
                             </div>
                         </div>
                     </div>
@@ -75,12 +169,12 @@
                         <h2 style="font-family: MarlinSoftSQ-Medium; border-bottom: 2px dashed #0d0065;">Support</h2>
                         <div style="display: flex; gap: 40px;">
                             <div class="flex flex-col">
-                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Legal & Privacy</a> <br><br>
-                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Status</a>
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer" style="color: gray;">Legal & Privacy</a> <br><br>
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer" style="color: gray;">Status</a>
                             </div>
                             <div class="flex flex-col">
-                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Bug Report</a> <br><br>
-                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Terms of service</a>
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer" style="color: gray;">Bug Report</a> <br><br>
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer" style="color: gray;">Terms of service</a>
                             </div>
                         </div>
                     </div>
@@ -90,20 +184,46 @@
         <div class="easteregg-image">
         </div>
 
+
+<!-- Floating white arrow on right with bounce -->
+<img src="../static/images/scribble-arrow.png" 
+     alt="Scroll Down" 
+     style="
+        position: fixed;
+        right: 100px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: auto;
+        height: 300px;
+        z-index: 1000;
+        cursor: pointer;
+        opacity: 0.8;
+        filter: invert(1); /* white */
+        animation: bounceArrow 1.5s ease-in-out infinite;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+     "
+     onclick="window.scrollBy({ top: 800, behavior: 'smooth' })"
+/>
+
+<style>
+@keyframes bounceArrow {
+    0%, 100% {
+        transform: translateY(-50%) translateY(0);
+    }
+    50% {
+        transform: translateY(-50%) translateY(10px);
+    }
+}
+</style>
+
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         // Randomize GIF for the overlay
         const gifs = [
-            "../static/images/qbit.gif",
-            "../static/images/duality.gif",
-            "../static/images/entanglement.gif",
-            "../static/images/particles.gif",
-            "../static/images/slit.gif",
             "../static/images/ripple.gif",
             "../static/images/beat.gif",
             "../static/images/drop.gif",
-            "../static/images/donut.gif",
-            "../static/images/wave.gif",
             "../static/images/ripple.webp"
         ];
 
