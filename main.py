@@ -5,6 +5,10 @@ from string import ascii_uppercase
 import base64
 import os
 
+def emit_qkd_debug(message, msg_type='info'):
+    """Emit QKD debug messages to the client"""
+    socketio.emit("qkd_debug", {"message": message, "type": msg_type}, room=request.sid)
+
 # Create an instance of the app:
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "very_secret_key" #TODO: See how to make this more secure
@@ -218,6 +222,8 @@ def connect(auth):
     '''
     STEP 1: DISTRIBUTING QUANTUM STATES:
     '''
+    emit_qkd_debug("🔄 STEP 1: Distributing Quantum States", "info")
+    emit_qkd_debug(f"Initializing 24-qubit quantum register...", "info")
 
     qreg = QuantumRegister(24) # Quantum register with 24 qubits
     creg = ClassicalRegister(24) # Classical register with 24 bits
@@ -242,8 +248,13 @@ def connect(auth):
             alice.h(qreg[i])
             alice_basis.append('X')
 
+    emit_qkd_debug(f"Alice's encoding bases: {alice_basis}", "info")
+    emit_qkd_debug(f"Sending qubits through noisy channel...", "warning")
+
     bob = QuantumCircuit(qreg, creg, name='bob') # Defining Bob circuit
     NoisyChannel(alice, bob, 'alice') # Alice sends noisy states to bob
+
+    emit_qkd_debug(f"Bob receiving and measuring qubits...", "info")
 
     # Bob:
     for i in range(24):
@@ -256,17 +267,23 @@ def connect(auth):
             bob.measure(qreg[i],creg[i])
             bob_basis.append('X')
 
+    emit_qkd_debug(f"Bob's measurement bases: {bob_basis}", "info")
+
     # Run the bob circuit:
     job = AerSimulator().run(bob, shots=1)
     counts = job.result().get_counts(bob)
     counts = print_outcomes_in_reverse(counts)
     received = list(map(int, counts))
 
+    emit_qkd_debug(f"Bob's received bits: {received}", "info")
+
     #####################################################################################################
 
     '''
     STEP 2: SIFTING:
     '''
+    emit_qkd_debug("🔄 STEP 2: Sifting Keys (Basis Reconciliation)", "info")
+    
     # Sifting:
     alice_key=[] # Alice's register for matching rounds
     bob_key=[] # Bob's register for matching rounds
@@ -277,12 +294,18 @@ def connect(auth):
         else:
             pass # Discard round if bases mismatched
 
+
+    emit_qkd_debug(f"Matched bases: {len(alice_key)}/24", "success")
+    emit_qkd_debug(f"Alice's sifted key: {alice_key}", "info")
+    emit_qkd_debug(f"Bob's sifted key: {bob_key}", "info")
+
     #####################################################################################################
 
     '''
     STEP 3: COMPUTING QBER (QUANTUM BIT ERROR RATE):
     '''
-
+    emit_qkd_debug("🔄 STEP 3: Computing QBER (Quantum Bit Error Rate)", "info")
+    
     # QBER:
     rounds = len(alice_key)//3
     errors=0
@@ -295,6 +318,9 @@ def connect(auth):
         del bob_key[bit_index]
     QBER=errors/rounds # calculating QBER
     QBER=round(QBER,2) # saving the answer to two decimal places
+
+    emit_qkd_debug(f"Tested {rounds} bits, found {errors} errors", "info")
+    emit_qkd_debug(f"QBER = {QBER}", "success" if QBER < 0.11 else "warning")
 
     print("QBER value =", QBER)
     print("alices secret key =", alice_key)
@@ -347,22 +373,30 @@ def connect(auth):
     '''
     4.1] CASCADING PROTOCOL:
     '''
+    
     # Before starting error correction, we check calculated QBER value:
     if QBER==0.0:
+        emit_qkd_debug("✅ QBER is 0 - Perfect channel! Skipping error correction.", "success")
         print("QBER is 0. Cascade Protocol skipped!")
         print("Final Key alice", alice_key)
         print("Final Key bob", bob_key)
     if QBER>=0.25: 
+        emit_qkd_debug(f"❌ QBER threshold exceeded ({QBER} >= 0.25)", "error")
+        emit_qkd_debug("Protocol aborted - channel too noisy!", "error")
         print("QBER value is", QBER,"\nThreshold value reached! Protocol Aborted!") # If QBER is above threshold value - we abort protocol
         #* Try again:
         connect(auth)
     if 0<QBER<=0.25: # if 0<QBER<=0.25 we perform Cascade protocol
+        emit_qkd_debug("🔄 STEP 4: Error Correction (Cascade Protocol)", "info")
         blockSize=0.73//QBER
+        emit_qkd_debug(f"Block size: {blockSize}", "info")
         kFinalA, kFinalB=[], [] # creating registers for final keys
         # Cascade protocol 1st pass:
         corrBlockA, corrBlockB, errBlockA, errBlockB=cascade_pass(alice_key, bob_key, blockSize) # cascade function
         kFinalA.extend(corrBlockA) # adding block which parity bits matched to final key string
         kFinalB.extend(corrBlockB)
+
+        emit_qkd_debug(f"First pass complete - {len(errBlockA)} error blocks found", "info")
         
     # Now aproximately know how many errors we have in initial key string,
     # because after first pass each block in errorA/B list contains 1 (or other odd number) of errors
@@ -370,7 +404,10 @@ def connect(auth):
     # In other words, key length in penultimate pass of the Cascade protocol is known
 
         penultimatePassLength=len(alice_key)-len(errBlockA)
+        pass_count = 1
         while len(kFinalA)!=penultimatePassLength: # Bisective search at each block until corrected key length is not equal length of initial key minus error blocks number after first pass
+            pass_count += 1
+            emit_qkd_debug(f"Cascade pass {pass_count} running...", "info")
             for i, (blockA, blockB) in enumerate(zip(errBlockA, errBlockB)):
                 if len(blockA)>1:
                     secondPassA=list(blockA) # convert block into a lists
@@ -418,10 +455,12 @@ def connect(auth):
                 
         print("Final Key alice", kFinalA)
         print("Final Key bob", kFinalB)
+        emit_qkd_debug(f"✅ Cascade complete after {pass_count} passes", "success")
 
     '''
     4.2] BICONF STRATEGY:
     '''
+    emit_qkd_debug("🔄 Running BICONF strategy for additional error detection...", "info")
 
     from numpy import log as ln
 
@@ -498,12 +537,15 @@ def connect(auth):
     print("BICONF strategy completed!\n", error, "errors found!")
     print("Final key alice", kFinalA)
     print("Final key bob", kFinalB)
-
+    
+    emit_qkd_debug(f"✅ BICONF complete - {error} errors found and corrected", "success")
     #####################################################################################################
 
     '''
     STEP 5: PRIVACY AMPLIFICATION: (THROUGH HASHING)
     '''
+
+    emit_qkd_debug("🔄 STEP 5: Privacy Amplification (Hashing)", "info")
 
     # Privacy amplification:
     # Generating seed (salt):
@@ -524,9 +566,11 @@ def connect(auth):
     if kFinalA[0]==1:
         resultA=hashlib.sha256(strKFinalA.encode())
         print("alices' final key:", bin(int(resultA.hexdigest(), 16))[2:])
+        emit_qkd_debug("Using SHA-256 hash function", "info")
     else:
         resultA=hashlib.sha3_256(strKFinalA.encode())
         print("alices' final key:", bin(int(resultA.hexdigest(), 16))[2:])
+        emit_qkd_debug("Using SHA3-256 hash function", "info")
 
     print()
     if kFinalB[0]==1:
@@ -535,6 +579,10 @@ def connect(auth):
     else:
         resultB=hashlib.sha3_256(strKFinalB.encode())
         print("bob' final key:", bin(int(resultB.hexdigest(), 16))[2:])
+
+    final_key = bin(int(resultA.hexdigest(), 16))[2:]
+    emit_qkd_debug(f"✅ Final key generated: {final_key[:32]}... ({len(final_key)} bits)", "success")
+    emit_qkd_debug("🔐 QKD Protocol Complete - Secure channel established!", "success")
     
     #* Store user key:
     session["key"] = bin(int(resultA.hexdigest(), 16))[2:]
@@ -698,3 +746,4 @@ if __name__ == "__main__":
     socketio.run(app, host=host, port=port, debug=True)
 
 ####################
+
