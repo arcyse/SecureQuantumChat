@@ -1,4 +1,8 @@
-# SecureQuantumChat
+# <p align="center">
+  <a href="https://sqc.prnv.cc">
+    <img src="https://raw.githubusercontent.com/arcyse/SecureQuantumChat/main/static/images/sqc-logo.png" width="100" alt="SecureQuantumChat Logo" />
+  </a>
+</p>
 
 **SecureQuantumChat** is an open-source web application that demonstrates **quantum key distribution (QKD)** in action by enabling real-time encrypted chatrooms where keys are generated using the **BB84 quantum protocol** and messages are encrypted with a one-time pad derived from that key.
 
