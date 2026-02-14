@@ -15,12 +15,30 @@
     <div class="chat-main">
         <div class="chat-header">
             <h2>Chat Room: {{ code }}</h2>
+            <button id="debug-toggle-btn" onclick="toggleDebugConsole()">🔍 QKD Debug</button>
             <button id="terminate-btn" onclick="confirmTermination()">Terminate Room</button>
         </div>
         <div class="messages" id="messages"></div> <!-- Messages are inserted into div using SocketIO in JS -->
         <div class="inputs">
             <input type="text" placeholder="Enter message..." name="message" id="message">
             <button type="button" name="send" id="send-btn" onClick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <!-- Debug Console Panel -->
+    <div class="debug-console" id="debug-console">
+        <div class="debug-header">
+            <h3>🔐 QKD Protocol Debug Console</h3>
+            <button class="debug-close" onclick="toggleDebugConsole()">✕</button>
+        </div>
+        <div class="debug-content" id="debug-content">
+            <div class="debug-log">
+                <p class="debug-info">Waiting for QKD protocol to start...</p>
+            </div>
+        </div>
+        <div class="debug-footer">
+            <button onclick="clearDebugLog()">Clear Log</button>
+            <button onclick="downloadDebugLog()">Download Log</button>
         </div>
     </div>
 </div>
@@ -45,8 +63,51 @@
     const userCount = document.getElementById("user-count"); // Get the user count element
     const terminateBtn = document.getElementById("terminate-btn"); // Get the terminate button element
     const scrollToTopBtn = document.getElementById("scroll-to-top-btn"); // Get the scroll to top button
+    const debugConsole = document.getElementById("debug-console"); // Get debug console
+    const debugContent = document.getElementById("debug-content"); // Get debug content area
 
     var key = 0;
+    let debugLogs = []; // Store debug logs
+
+    // Debug Console Functions
+    const toggleDebugConsole = () => {
+        debugConsole.classList.toggle('active');
+    };
+
+    const addDebugLog = (message, type = 'info') => {
+        const timestamp = new Date().toLocaleTimeString();
+        const logEntry = `[${timestamp}] ${message}`;
+        debugLogs.push(logEntry);
+
+        const logElement = document.createElement('p');
+        logElement.className = `debug-${type}`;
+        logElement.textContent = logEntry;
+        
+        const debugLog = debugContent.querySelector('.debug-log');
+        debugLog.appendChild(logElement);
+        
+        // Auto-scroll to bottom
+        debugContent.scrollTop = debugContent.scrollHeight;
+    };
+
+    const clearDebugLog = () => {
+        debugLogs = [];
+        const debugLog = debugContent.querySelector('.debug-log');
+        debugLog.innerHTML = '<p class="debug-info">Debug log cleared.</p>';
+    };
+
+    const downloadDebugLog = () => {
+        const logText = debugLogs.join('\n');
+        const blob = new Blob([logText], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `qkd-debug-log-${new Date().toISOString()}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
 
     // Function to generate a color based on the username
     const stringToColor = (str) => {
@@ -139,10 +200,12 @@
         if (message === "") return;
 
         console.log(`[Socket] Sending message: ${message.substring(0, 20)}...`);
+        addDebugLog(`Encrypting message with XOR cipher...`, 'info');
         const asciiKey = binaryToAscii(key);  // Convert binary key to ASCII
         console.log(`[Socket] Using key (first few chars): ${asciiKey.substring(0, 5)}...`);
         const encrypted = xorEncrypt(message, asciiKey);  // Encrypt the message
         console.log(`[Socket] Encrypted message length: ${encrypted.length}`);
+        addDebugLog(`Message encrypted. Length: ${encrypted.length} bytes`, 'success');
         socketio.emit("message", { message: encrypted });
         console.log(`[Socket] Message sent to server`);
         messageInput.value = ""; // Clear the input field
@@ -219,6 +282,7 @@
     // Listen for a "message" event (when send() is called from server end):
     socketio.on("message", (data) => {
         console.log(`[Socket] Received message from ${data.name}: ${data.message.substring(0, 20)}...`);
+        addDebugLog(`Received encrypted message from ${data.name}`, 'info');
         createMessage(data.name, data.message);
     });
 
@@ -244,20 +308,30 @@
     socketio.on("key", (data) => {
         console.log(`[Socket] Received key: ${data.substring(0, 10)}...`);
         key = data;
+        addDebugLog(`✅ QKD Complete! Key received: ${data.substring(0, 32)}... (${data.length} bits)`, 'success');
+    });
+
+    // Listen for QKD debug logs from server
+    socketio.on("qkd_debug", (data) => {
+        addDebugLog(data.message, data.type || 'info');
     });
 
     // Add this to track socket connection
     socketio.on("connect", () => {
         console.log(`[Socket] Connected with ID: ${socketio.id}`);
+        addDebugLog(`Connected to server. Socket ID: ${socketio.id}`, 'success');
+        addDebugLog(`Starting BB84 QKD Protocol...`, 'info');
     });
 
     socketio.on("disconnect", (reason) => {
         console.log(`[Socket] Disconnected. Reason: ${reason}`);
+        addDebugLog(`Disconnected from server. Reason: ${reason}`, 'warning');
     });
 
     
     socketio.on("connect_error", (error) => {
         console.log(`[Socket] Connection error: ${error.message}`);
+        addDebugLog(`Connection error: ${error.message}`, 'error');
     });
 
 
