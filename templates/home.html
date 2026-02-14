@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="gif-overlay">
+</div>
+<div class="container">
+    <div style="margin-top: 5%;">
+    <h1 class="title">Welcome to <br> <span class="text-transform"><span class="text-original">Schrödinger's</span><span class="text-hover">Super Secure</span></span> <span class="gif-underline">Quantum</span> Chat!</h1>
+    <p class="description">Join a chat room or create your own.<br>Connect with peers securely with the un-certainity of quantum mechanics!</p>
+    </div>
+    <div class="landing-page">
+        <!-- Form for joining a room -->
+        <form method="post" class="form-container" id="join-room-form"> 
+            <div class="input-group">
+                <label for="name">Username</label>
+                <input type="text" id="name" placeholder="Pick a name!" name="name" value="{{ name }}" required/> 
+            </div>
+            <div class="input-group">
+                <label for="code">Room Code</label>
+                <input type="text" id="code" placeholder="4 character code" name="code" value="{{ code }}" required/>
+            </div>
+            <div class="button-group">
+                <button type="submit" name="join" class="create-btn">Join a Room</button>
+            </div>
+        </form>
+
+        <!-- Form for creating a room -->
+        <form method="post" class="form-container" id="create-room-form"> 
+            <div class="input-group">
+                <label for="name">Username</label>
+                <input type="text" id="name-create" placeholder="Pick a name!" name="name" value="{{ name }}" required/> 
+            </div>
+            <div class="button-group">
+                <button type="submit" name="create" class="create-btn create-room-btn">Create a Room</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Display error if present -->
+    {% if error %}
+    <ul class="error-list">
+        <li>{{ error }}</li>
+    </ul>
+    {% endif %}
+
+    <!-- Footer -->
+        <div class="footer" style="font-family:ABCFavoritMono-Bold; text-align: left; position: relative; padding: 20px; background-color: #f8f8f8;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div style="display: flex; flex-direction: column; align-items: flex-start;"> <!-- Logo and copyright section -->
+                    <div style="display: flex; align-items: center;">
+                        <img src="../static/images/sqc-logo.png" alt="sqc-cat" style="width: 70px; height: auto; margin-right: 10px;">
+                        <h1 style="font-family: MarlinSoftSQ-ExtraBold;">Secure Quantum Chat</h1>
+                    </div>
+                    <p style="margin-top: 10px;">
+                        <span style="display: inline; transform: scaleX(-1); font-size: 1.2em;">Ⓒ</span> Copyleft 2024 <br>
+                        Made in Bengaluru with 💖
+                    </p>
+                </div>
+                <!-- Flex container for Company and Support columns -->
+                <div style="display: flex; gap: 40px;">
+                    <div class="flex flex-col">
+                        <h2 style="font-family: MarlinSoftSQ-Medium; border-bottom: 2px dashed #0d0065;">Company</h2>
+                        <div style="display: flex; gap: 40px;">
+                            <div class="flex flex-col">
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Blog</a> <br><br>
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Pricing</a>
+                            </div>
+                            <div class="flex flex-col">
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">About Us</a> <br><br>
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Contact us</a> <br><br>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <h2 style="font-family: MarlinSoftSQ-Medium; border-bottom: 2px dashed #0d0065;">Support</h2>
+                        <div style="display: flex; gap: 40px;">
+                            <div class="flex flex-col">
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Legal & Privacy</a> <br><br>
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Status</a>
+                            </div>
+                            <div class="flex flex-col">
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Bug Report</a> <br><br>
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Terms of service</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="easteregg-image">
+        </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Randomize GIF for the overlay
+        const gifs = [
+            "../static/images/qbit.gif",
+            "../static/images/duality.gif",
+            "../static/images/entanglement.gif",
+            "../static/images/particles.gif",
+            "../static/images/slit.gif",
+            "../static/images/ripple.gif",
+            "../static/images/beat.gif",
+            "../static/images/drop.gif",
+            "../static/images/donut.gif",
+            "../static/images/wave.gif",
+            "../static/images/ripple.webp"
+        ];
+
+        const randomGif = gifs[Math.floor(Math.random() * gifs.length)];
+
+        const gifImg = document.createElement('img');
+        gifImg.src = randomGif;
+        gifImg.alt = "BG GIF";
+        gifImg.style.width = "100%";
+        gifImg.style.height = "100%";
+        gifImg.style.objectFit = "cover";
+
+        document.querySelector('.gif-overlay').appendChild(gifImg);
+
+        // Randomize image for the footer
+        const images = [
+            { src: "../static/images/richard-feynman.png", href: "https://wikipedia.org/wiki/Richard_Feynman" },
+            { src: "../static/images/albert-einstein.png", href: "https://wikipedia.org/wiki/Albert_Einstein" },
+            { src: "../static/images/niels-bohr.png", href: "https://wikipedia.org/wiki/Niels_Bohr" },
+            { src: "../static/images/max-planck.png", href: "https://wikipedia.org/wiki/Max_Planck" }
+        ];
+
+        const randomImage = images[Math.floor(Math.random() * images.length)];
+
+        const anchor = document.createElement('a');
+        anchor.href = randomImage.href;
+        anchor.target = "_blank";
+
+        const img = document.createElement('img');
+        img.src = randomImage.src;
+        img.alt = "Easter Egg";
+        img.style.width = "200px";
+        img.style.height = "auto";
+
+        anchor.appendChild(img);
+        document.querySelector('.easteregg-image').appendChild(anchor);
+    });
+</script>
+{% endblock %}

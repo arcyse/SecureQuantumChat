@@ -1,0 +1,371 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="chat-container">
+    <div class="sidebar">
+        <div class="users">
+            <h3>Users <span id="user-count" class="user-count">0</span> </h3>
+            <div class="user-list-wrapper">
+                <ul id="user-list">
+                    <!-- User list will be populated by JavaScript -->
+                </ul>
+            </div>
+            <button id="exit-btn" onclick="leaveRoom()">Exit Room</button>
+        </div>
+    </div>
+    <div class="chat-main">
+        <div class="chat-header">
+            <h2>Chat Room: {{ code }}</h2>
+            <button id="terminate-btn" onclick="confirmTermination()">Terminate Room</button>
+        </div>
+        <div class="messages" id="messages"></div> <!-- Messages are inserted into div using SocketIO in JS -->
+        <div class="inputs">
+            <input type="text" placeholder="Enter message..." name="message" id="message">
+            <button type="button" name="send" id="send-btn" onClick="sendMessage()">Send</button>
+        </div>
+    </div>
+</div>
+
+<!-- Floating button to scroll to top -->
+<button id="scroll-to-top-btn" onclick="scrollToTop()">↑</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js" integrity="sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.4/dist/purify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> 
+
+<!-- Add JS Script -->
+<script type="text/javascript">
+    // Add this at the beginning of your script
+    console.log("=== Room.html script initialized ===");
+    // Connect to socket of hosting server:
+    var socketio = io(); // We can call this io() since we have the CDN library of flask-socketio in the base.html file
+    
+    const messages = document.getElementById("messages");
+    let messageInput = document.getElementById("message"); // Get the message input element
+    const userList = document.getElementById("user-list"); // Get the user list element
+    const userCount = document.getElementById("user-count"); // Get the user count element
+    const terminateBtn = document.getElementById("terminate-btn"); // Get the terminate button element
+    const scrollToTopBtn = document.getElementById("scroll-to-top-btn"); // Get the scroll to top button
+
+    var key = 0;
+
+    // Function to generate a color based on the username
+    const stringToColor = (str) => {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        let color = '#';
+        for (let i = 0; i < 3; i++) {
+            const value = (hash >> (i * 8)) & 0xFF;
+            color += ('00' + value.toString(16)).substr(-2);
+        }
+        return color;
+    };
+
+    // Function to format the timestamp
+    const formatTimestamp = (date) => {
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+    };
+
+    // Function to create a copy button
+    const createCopyButton = (messageElement, messageText) => {
+        const copyButton = document.createElement('button');
+        copyButton.textContent = 'Ctrl+C';
+        copyButton.classList.add('copy-button');
+        copyButton.onclick = () => {
+            navigator.clipboard.writeText(messageText).then(() => {
+                alert('Message copied to clipboard');
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        };
+        messageElement.appendChild(copyButton);
+    };
+
+    // Function to create a copy button for a user
+    const createCopyButtonForUser = (userElement, username) => {
+        const copyButton = document.createElement('button');
+        copyButton.textContent = 'Copy';
+        copyButton.classList.add('copy-button');
+        copyButton.onclick = () => {
+            navigator.clipboard.writeText(username).then(() => {
+                alert('Username copied to clipboard');
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        };
+        userElement.appendChild(copyButton);
+    };
+
+    // Function to support multi-line input using Shift+Enter
+    messageInput.addEventListener("keydown", function(event) {
+        if (event.key === "Enter" && event.shiftKey) {
+            // Convert input to textarea if not already
+            if (messageInput.tagName.toLowerCase() === 'input') {
+                const textarea = document.createElement('textarea');
+                textarea.id = messageInput.id;
+                textarea.name = messageInput.name;
+                textarea.placeholder = messageInput.placeholder;
+                textarea.value = messageInput.value;
+                textarea.rows = 3;
+                textarea.className = messageInput.className;
+                messageInput.parentNode.replaceChild(textarea, messageInput);
+                messageInput = textarea;
+                messageInput.focus();
+                messageInput.setSelectionRange(event.target.selectionStart, event.target.selectionEnd);
+            }
+            // Add a new line
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            this.value = this.value.substring(0, start) + "\n" + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + 1;
+            event.preventDefault(); // Prevent the default behavior of Enter key
+        } else if (event.key === "Enter" && !event.shiftKey) {
+            // Prevent default behavior of Enter key
+            event.preventDefault();
+            // Trigger the send message function
+            sendMessage();
+        }
+    });
+
+    const sendMessage = () => {
+        const message = messageInput.value; // Use the messageInput variable
+        if (message === "") return;
+
+        console.log(`[Socket] Sending message: ${message.substring(0, 20)}...`);
+        const asciiKey = binaryToAscii(key);  // Convert binary key to ASCII
+        console.log(`[Socket] Using key (first few chars): ${asciiKey.substring(0, 5)}...`);
+        const encrypted = xorEncrypt(message, asciiKey);  // Encrypt the message
+        console.log(`[Socket] Encrypted message length: ${encrypted.length}`);
+        socketio.emit("message", { message: encrypted });
+        console.log(`[Socket] Message sent to server`);
+        messageInput.value = ""; // Clear the input field
+        // Convert textarea back to input if it is a textarea
+        if (messageInput.tagName.toLowerCase() === 'textarea') {
+            const input = document.createElement('input');
+            input.id = messageInput.id;
+            input.name = messageInput.name;
+            input.placeholder = messageInput.placeholder;
+            input.className = messageInput.className;
+            messageInput.parentNode.replaceChild(input, messageInput);
+            messageInput = input;
+            messageInput.addEventListener("keydown", function(event) {
+                if (event.key === "Enter" && event.shiftKey) {
+                    // Convert input to textarea if not already
+                    if (messageInput.tagName.toLowerCase() === 'input') {
+                        const textarea = document.createElement('textarea');
+                        textarea.id = messageInput.id;
+                        textarea.name = messageInput.name;
+                        textarea.placeholder = messageInput.placeholder;
+                        textarea.value = messageInput.value;
+                        textarea.rows = 3;
+                        textarea.className = messageInput.className;
+                        messageInput.parentNode.replaceChild(textarea, messageInput);
+                        messageInput = textarea;
+                        messageInput.focus();
+                        messageInput.setSelectionRange(event.target.selectionStart, event.target.selectionEnd);
+                    }
+                    // Add a new line
+                    const start = this.selectionStart;
+                    const end = this.selectionEnd;
+                    this.value = this.value.substring(0, start) + "\n" + this.value.substring(end);
+                    this.selectionStart = this.selectionEnd = start + 1;
+                    event.preventDefault(); // Prevent the default behavior of Enter key
+                } else if (event.key === "Enter" && !event.shiftKey) {
+                    // Prevent default behavior of Enter key
+                    event.preventDefault();
+                    // Trigger the send message function
+                    sendMessage();
+                }
+            });
+        }
+    };
+
+    // Function to create a message element
+    const createMessage = (name, msg) => {
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('text');
+
+        const timestampElement = document.createElement('span');
+        timestampElement.classList.add('timestamp');
+        timestampElement.textContent = formatTimestamp(new Date());
+
+        const messageContentElement = document.createElement('span');
+        messageContentElement.classList.add('message-content');
+        const sanitizedMessage = DOMPurify.sanitize(marked.parse(msg)); // Parse and sanitize Markdown
+        const usernameColor = stringToColor(name); // Generate color for username
+        messageContentElement.innerHTML = `<span class="username" style="color: ${usernameColor}">${name}</span>: ${sanitizedMessage}`;
+
+        messageElement.appendChild(timestampElement);
+        messageElement.appendChild(messageContentElement);
+
+        // Add the copy button
+        createCopyButton(messageElement, msg); // Pass only the message content
+
+        messages.appendChild(messageElement);
+
+        // Auto-scroll to the bottom if the user is not reading history
+        if (messages.scrollHeight - messages.scrollTop <= messages.clientHeight + 150) {
+            messages.scrollTop = messages.scrollHeight;
+        }
+    };
+
+    // Listen for a "message" event (when send() is called from server end):
+    socketio.on("message", (data) => {
+        console.log(`[Socket] Received message from ${data.name}: ${data.message.substring(0, 20)}...`);
+        createMessage(data.name, data.message);
+    });
+
+    // Convert binary string key to ASCII characters
+    const binaryToAscii = (binaryKey) => {
+        let asciiKey = '';
+        for (let i = 0; i < binaryKey.length; i += 8) {
+            asciiKey += String.fromCharCode(parseInt(binaryKey.substr(i, 8), 2));
+        }
+        return asciiKey;
+    };
+
+    // XOR encryption using ASCII key (keeps binary output)
+    const xorEncrypt = (message, key) => {
+        let result = '';
+        for (let i = 0; i < message.length; i++) {
+            result += String.fromCharCode(message.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+        }
+        return btoa(result);  // Base64 encode the result to send it safely
+    };
+
+    // Receive secret from server through QKD:
+    socketio.on("key", (data) => {
+        console.log(`[Socket] Received key: ${data.substring(0, 10)}...`);
+        key = data;
+    });
+
+    // Add this to track socket connection
+    socketio.on("connect", () => {
+        console.log(`[Socket] Connected with ID: ${socketio.id}`);
+    });
+
+    socketio.on("disconnect", (reason) => {
+        console.log(`[Socket] Disconnected. Reason: ${reason}`);
+    });
+
+    
+    socketio.on("connect_error", (error) => {
+        console.log(`[Socket] Connection error: ${error.message}`);
+    });
+
+
+
+
+    // Show terminate button if the user is the creator
+    const showTerminateButton = (creator) => {
+        const currentUser = sessionStorage.getItem("name");
+        console.log("Current User:", currentUser);
+        console.log("Creator:", creator);
+        if (currentUser === creator) {
+            terminateBtn.style.display = "block";
+            console.log("Terminate button displayed");
+        } else {
+            terminateBtn.style.display = "none";
+            console.log("Terminate button not displayed");
+        }
+    };
+
+    // Confirm room termination
+    const confirmTermination = () => {
+        if (confirm("Are you sure you want to terminate the room?")) {
+            socketio.emit("terminateRoom");
+        }
+    };
+
+    // Listen for room termination
+    socketio.on("roomTerminated", (data) => {
+        console.log(`[Socket] Room terminated: ${data.code}`);
+        alert(`The creator of room ${data.code} has terminated the chat room.`);
+        window.location.href = "/";
+    });
+
+    // Leave the room
+    const leaveRoom = () => {
+        if (confirm("Are you sure you want to leave the room?")) {
+            socketio.emit("leaveRoom");
+            window.location.href = "/";
+        }
+    };
+
+    // Update user list
+    const updateUserList = (users, creator) => {
+        const existingUsers = new Set(Array.from(userList.children).map(li => li.textContent.replace(" (Creator)", "")));
+        
+        userList.innerHTML = '';
+        users.forEach(user => {
+            if (!existingUsers.has(user)) {
+                const li = document.createElement('li');
+                li.textContent = user;
+                if (user === creator) {
+                    li.textContent += " (Creator)";
+                }
+                createCopyButtonForUser(li, user);
+                userList.appendChild(li);
+                existingUsers.add(user);
+            }
+        });
+        userCount.textContent = userList.children.length; // Update the user count based on actual list items
+        // Add a delay before showing the terminate button
+        setTimeout(() => {
+            showTerminateButton(creator);
+        }, 100); // 100 milliseconds delay
+    };
+
+    // Listen for user list updates
+    socketio.on("updateUserList", (data) => {
+        console.log(`[Socket] User list updated. Users: ${JSON.stringify(data.users)}, Creator: ${data.creator}`);
+        sessionStorage.setItem("creator", data.creator); // Store the creator in session storage
+        updateUserList(data.users, data.creator);
+    });
+
+    // Request initial user list
+    socketio.emit("requestUserList");
+
+    // Set the current user's name in sessionStorage when they join the room
+    socketio.on("setUserName", (data) => {
+        console.log(`[Socket] Setting username to: ${data.name}`);
+        sessionStorage.setItem("name", data.name);
+    });
+
+    // Function to scroll to the top of the chat
+    const scrollToTop = () => {
+        messages.scrollTop = 0;
+    };
+
+    // Show the scroll-to-top button when the user scrolls up
+    let lastScrollTop = 0;
+    messages.addEventListener('scroll', () => {
+        const currentScrollTop = messages.scrollTop;
+        if (currentScrollTop < lastScrollTop) {
+            // User is scrolling up
+            scrollToTopBtn.style.display = 'block';
+        } else {
+            // User is scrolling down
+            scrollToTopBtn.style.display = 'none';
+        }
+        lastScrollTop = currentScrollTop;
+    });
+
+    // Ensure the button remains visible when hovered over
+    scrollToTopBtn.addEventListener('mouseenter', () => {
+    scrollToTopBtn.style.display = 'block';
+});
+
+    scrollToTopBtn.addEventListener('mouseleave', () => {
+        scrollToTopBtn.style.display = 'none';
+    });
+
+</script>
+{% endblock %}

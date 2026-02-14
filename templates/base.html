@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>SQC</title>
+        <!-- Favicon stuff -->
+        <link rel="apple-touch-icon" sizes="180x180" href="../static/favicon/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="../static/favicon/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="../static/favicon/favicon-16x16.png">
+        <link rel="manifest" href="../static/favicon/site.webmanifest">
+        <!-- Link to the style sheet-->
+        <link 
+        rel = "stylesheet" href = "{{url_for('static', filename = 'style.css')}}"/>
+        <!-- Link to the flask-socketIO script (from CDN) -->
+        <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+        integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+        crossorigin="anonymous"
+        ></script> 
+    </head>
+    <body>
+        <div class="toolbar">
+            <img src="../static/images/sqc-logo.png" alt="cat logo" style="width: 40px; height: auto;">
+            <h2 style="font-family: MarlinSoftSQ-Medium; margin-left: 20px;">SeQ Chat</h2>
+            <button id="theme-toggle" class="button" style="margin-left: auto;">Toggle theme</button>
+        </div>
+        <div class="content"> 
+            <!-- Content div styled in CSS -->
+            {% block content %} {% endblock %}
+        </div>
+
+        <script type="text/javascript">
+
+            // Theme Toggle
+
+            const themeToggle = document.getElementById("theme-toggle");
+        
+            // Check for saved user preference, if any, and apply it
+            let currentTheme = localStorage.getItem("theme") || "light";
+            document.documentElement.setAttribute("data-theme", currentTheme);
+        
+            // Update the button text based on the current theme
+            themeToggle.innerText = currentTheme === "dark" ? "Light Mode" : "Dark Mode";
+        
+            themeToggle.addEventListener("click", () => {
+                // Toggle between light and dark themes
+                currentTheme = currentTheme === "dark" ? "light" : "dark"; // Update currentTheme here
+                document.documentElement.setAttribute("data-theme", currentTheme);
+                localStorage.setItem("theme", currentTheme); // Save the user's preference
+                themeToggle.innerText = currentTheme === "dark" ? "Light Mode" : "Dark Mode";
+            });
+
+            // Toolbar
+
+            window.addEventListener('scroll', function() {
+                const toolbar = document.querySelector('.toolbar');
+                if (window.scrollY > 0) {
+                    toolbar.classList.add('scrolled');
+                } else {
+                    toolbar.classList.remove('scrolled');
+                }
+            });
+        </script>        
+    </body>
+</html>
