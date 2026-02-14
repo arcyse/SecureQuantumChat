@@ -4,20 +4,22 @@
 
 📍 Live demo: [https://sqc.prnv.cc](https://sqc.prnv.cc)
 
+> [!WARNING]
+> Do not expose your private keys, secrets, or any sensitive data anywhere — this demo uses [Qiskit](https://www.ibm.com/quantum/qiskit)'s simulated quantum channels for security concepts and proof of concept demo only.
 
-## 🚀 What It Is
+## What Is It ?¿
 
-SecureQuantumChat lets users create or join chat rooms where messages are encrypted using a **quantum-derived secret key** generated in the browser and server using the **BB84 QKD protocol** — a physics-based key exchange scheme that’s provably secure against eavesdroppers because measuring quantum information disturbs it.
+SecureQuantumChat lets users create or join chat rooms where messages are encrypted using a **quantum-derived secret key** generated in the browser and server using the **BB84 QKD protocol** -  _a physics-based key exchange scheme that’s provably secure against eavesdroppers because measuring quantum information disturbs it._
 
-This project is designed as a **proof of concept** — showing how quantum key exchange and perfect secrecy can be used to protect real-time chat, even in the face of powerful attackers.
+This project is designed as a **proof of concept** showing how quantum key exchange and perfect secrecy can be used to protect real-time chat, even in the face of powerful attackers.
 
 
-## 📌 Core Features
+## Core Features
 
-* 🔐 **Quantum-generated keys:** Uses the BB84 protocol to create shared secret keys between client and server.
-* 💬 **Encrypted chat:** Messages are encrypted with a one-time pad using keys derived from QKD.
-* 🌐 **Web-based:** Accessible directly from the browser via WebSocket with a Python/Flask backend.
-* 📡 **Real-time communication:** Fast, interactive messaging once keys are established.
+* **Quantum-generated keys:** Uses the BB84 protocol to create shared secret keys between client and server.
+* **Encrypted chat:** Messages are encrypted with a one-time pad using keys derived from QKD.
+* **Web-based:** Accessible directly from the browser via WebSocket with a Python/Flask backend.
+* **Real-time communication:** Fast, interactive messaging once keys are established.
 
 
 ##  How It Works
@@ -27,7 +29,14 @@ This project is designed as a **proof of concept** — showing how quantum key e
 3. **Secure Messaging** – Each message is encrypted with the quantum-derived key using XOR (one-time pad), ensuring perfect secrecy.
 
 
-## ⚡ Quick Start (Local)
+## Why This Matters
+
+Unlike traditional symmetric key exchange (e.g. Diffie–Hellman) quantum key distribution doesn’t rely on computational hardness, it relies on physical laws. Eavesdropping on a quantum channel alters quantum states and can be **detected**, hence offering *information-theoretic security*.
+
+This makes SecureQuantumChat a **tangible demonstration** of next-generation secure messaging.
+
+
+## Quick Start (Local) 
 
 Make sure you have Python and dependencies installed:
 
@@ -53,7 +62,7 @@ python main.py
 Then open your browser to the local server (`http://localhost:5000`).
 
 
-## 🏗️ Tech Stack
+## Tech Stack
 
 | Component | Technology                              |
 | --------- | ----------------------------------------|
@@ -63,18 +72,6 @@ Then open your browser to the local server (`http://localhost:5000`).
 | Frontend  | HTML/CSS/JS                             |
 
 
+## License
 
-## 📚 Why This Matters
-
-Unlike traditional symmetric key exchange (e.g. Diffie–Hellman) quantum key distribution doesn’t rely on computational hardness, it relies on physical laws. Eavesdropping on a quantum channel alters quantum states and can be **detected**, hence offering *information-theoretic security*.
-
-This makes SecureQuantumChat a **tangible demonstration** of next-generation secure messaging.
-
-
-## 📄 License
-
-This project is released under the MIT License — see `LICENSE` for details.
-
-
-
-## 🙏 Acknowledgements
+This project is released under the MIT License.
