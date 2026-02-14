@@ -1,4 +1,4 @@
-# <p align="center">
+ <p align="left">
   <a href="https://sqc.prnv.cc">
     <img src="https://raw.githubusercontent.com/arcyse/SecureQuantumChat/main/static/images/sqc-logo.png" width="100" alt="SecureQuantumChat Logo" />
   </a>
