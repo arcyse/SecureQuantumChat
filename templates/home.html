@@ -4,121 +4,91 @@
 <div class="gif-overlay">
 </div>
 <div class="container">
-    <div class="hero-section">
-        <h1 class="title">
-            <span class="text-transform">
-                <span class="text-original">Schrödinger's</span>
-                <span class="text-hover">Super Secure</span>
-            </span>
-            <br>
-            <span class="gif-underline">Quantum</span> Chat
-        </h1>
-        <p class="tagline">Encrypted conversations powered by quantum key distribution</p>
-        <p class="subtitle">Where the act of eavesdropping changes everything</p>
+    <div style="margin-top: 5%;">
+    <h1 class="title">Welcome to <br> <span class="text-transform"><span class="text-original">Schrödinger's</span><span class="text-hover">Super Secure</span></span> <span class="gif-underline">Quantum</span> Chat!</h1>
+    <p class="description">Join a chat room or create your own.<br>Connect with peers securely with the un-certainity of quantum mechanics!</p>
     </div>
-
-    <!-- How it works section -->
-    <div class="how-it-works">
-        <h2>How It Works</h2>
-        <div class="steps-grid">
-            <div class="step">
-                <span class="step-number">1</span>
-                <h3>Create or Join</h3>
-                <p>Start a new room or enter a friend's 4-character code</p>
-            </div>
-            <div class="step">
-                <span class="step-number">2</span>
-                <h3>QKD Handshake</h3>
-                <p>BB84 protocol generates your shared encryption key</p>
-            </div>
-            <div class="step">
-                <span class="step-number">3</span>
-                <h3>Chat Securely</h3>
-                <p>Messages encrypted with your quantum-derived key</p>
-            </div>
-        </div>
-        <p class="pro-tip"><strong>Pro tip:</strong> Click "QKD Debug" in the chat room to see the quantum mechanics in action</p>
-    </div>
-
     <div class="landing-page">
         <!-- Form for joining a room -->
-        <div class="form-card">
-            <h2 class="form-title">Join a Room</h2>
-            <form method="post" class="form-container" id="join-room-form"> 
-                <div class="input-group">
-                    <label for="name">Username</label>
-                    <input type="text" id="name" placeholder="Your nickname" name="name" value="{{ name }}" required/> 
-                </div>
-                <div class="input-group">
-                    <label for="code">Room Code</label>
-                    <input type="text" id="code" placeholder="ABCD" name="code" value="{{ code }}" maxlength="4" required/>
-                    <small>4 characters, case-insensitive</small>
-                </div>
-                <button type="submit" name="join" class="primary-btn">Join Room</button>
-            </form>
-        </div>
-
-        <div class="divider">
-            <span>or</span>
-        </div>
+        <form method="post" class="form-container" id="join-room-form"> 
+            <div class="input-group">
+                <label for="name">Username</label>
+                <input type="text" id="name" placeholder="Pick a name!" name="name" value="{{ name }}" required/> 
+            </div>
+            <div class="input-group">
+                <label for="code">Room Code</label>
+                <input type="text" id="code" placeholder="4 character code" name="code" value="{{ code }}" required/>
+            </div>
+            <div class="button-group">
+                <button type="submit" name="join" class="create-btn">Join a Room</button>
+            </div>
+        </form>
 
         <!-- Form for creating a room -->
-        <div class="form-card">
-            <h2 class="form-title">Create a Room</h2>
-            <form method="post" class="form-container" id="create-room-form"> 
-                <div class="input-group">
-                    <label for="name-create">Username</label>
-                    <input type="text" id="name-create" placeholder="Your nickname" name="name" value="{{ name }}" required/> 
-                </div>
-                <p class="form-hint">A random 4-character code will be generated for you to share</p>
-                <button type="submit" name="create" class="primary-btn create-room-btn">Create Room</button>
-            </form>
-        </div>
+        <form method="post" class="form-container" id="create-room-form"> 
+            <div class="input-group">
+                <label for="name">Username</label>
+                <input type="text" id="name-create" placeholder="Pick a name!" name="name" value="{{ name }}" required/> 
+            </div>
+            <div class="button-group">
+                <button type="submit" name="create" class="create-btn create-room-btn">Create a Room</button>
+            </div>
+        </form>
     </div>
 
     <!-- Display error if present -->
     {% if error %}
-    <div class="error-banner">
-        <span class="error-icon">⚠</span>
-        <span>{{ error }}</span>
-    </div>
+    <ul class="error-list">
+        <li>{{ error }}</li>
+    </ul>
     {% endif %}
 
     <!-- Footer -->
-    <div class="footer">
-        <div class="footer-content">
-            <div class="footer-left">
-                <div class="logo-section">
-                    <img src="../static/images/sqc-logo.png" alt="sqc-cat" class="footer-logo">
-                    <h1>Secure Quantum Chat</h1>
+        <div class="footer" style="font-family:ABCFavoritMono-Bold; text-align: left; position: relative; padding: 20px; background-color: #f8f8f8;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div style="display: flex; flex-direction: column; align-items: flex-start;"> <!-- Logo and copyright section -->
+                    <div style="display: flex; align-items: center;">
+                        <img src="../static/images/sqc-logo.png" alt="sqc-cat" style="width: 70px; height: auto; margin-right: 10px;">
+                        <h1 style="font-family: MarlinSoftSQ-ExtraBold;">Secure Quantum Chat</h1>
+                    </div>
+                    <p style="margin-top: 10px;">
+                        <span style="display: inline; transform: scaleX(-1); font-size: 1.2em;">Ⓒ</span> Copyleft 2024 <br>
+                        Made in Bengaluru with 💖
+                    </p>
                 </div>
-                <p class="copyright">
-                    <span class="copyleft">Ⓒ</span> Copyleft 2026 <br>
-                    Made in Bengaluru with 💖
-                </p>
-            </div>
-            <div class="footer-links">
-                <div class="footer-column">
-                    <h2>Company</h2>
-                    <a href="javascript:void(0)">Blog</a>
-                    <a href="javascript:void(0)">Pricing</a>
-                    <a href="javascript:void(0)">About Us</a>
-                    <a href="javascript:void(0)">Contact us</a>
-                </div>
-                <div class="footer-column">
-                    <h2>Support</h2>
-                    <a href="javascript:void(0)">Legal & Privacy</a>
-                    <a href="javascript:void(0)">Status</a>
-                    <a href="javascript:void(0)">Bug Report</a>
-                    <a href="javascript:void(0)">Terms of service</a>
+                <!-- Flex container for Company and Support columns -->
+                <div style="display: flex; gap: 40px;">
+                    <div class="flex flex-col">
+                        <h2 style="font-family: MarlinSoftSQ-Medium; border-bottom: 2px dashed #0d0065;">Company</h2>
+                        <div style="display: flex; gap: 40px;">
+                            <div class="flex flex-col">
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Blog</a> <br><br>
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Pricing</a>
+                            </div>
+                            <div class="flex flex-col">
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">About Us</a> <br><br>
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Contact us</a> <br><br>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <h2 style="font-family: MarlinSoftSQ-Medium; border-bottom: 2px dashed #0d0065;">Support</h2>
+                        <div style="display: flex; gap: 40px;">
+                            <div class="flex flex-col">
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Legal & Privacy</a> <br><br>
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Status</a>
+                            </div>
+                            <div class="flex flex-col">
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Bug Report</a> <br><br>
+                                <a href="javascript:void(0)" class="focus:outline-none focus:underline hover:text-gray-500 text-base leading-4 mt-2 text-gray-800 dark:text-white cursor-pointer">Terms of service</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div class="easteregg-image">
-    </div>
-</div>
+        <div class="easteregg-image">
+        </div>
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -148,7 +118,7 @@
 
         document.querySelector('.gif-overlay').appendChild(gifImg);
 
-        // Randomize image for the footer with wiggle animation
+        // Randomize image for the footer
         const images = [
             { src: "../static/images/richard-feynman.png", href: "https://wikipedia.org/wiki/Richard_Feynman" },
             { src: "../static/images/albert-einstein.png", href: "https://wikipedia.org/wiki/Albert_Einstein" },
@@ -161,16 +131,15 @@
         const anchor = document.createElement('a');
         anchor.href = randomImage.href;
         anchor.target = "_blank";
-        anchor.className = "scientist-link";
 
         const img = document.createElement('img');
         img.src = randomImage.src;
         img.alt = "Easter Egg";
-        img.className = "scientist-img";
+        img.style.width = "200px";
+        img.style.height = "auto";
 
         anchor.appendChild(img);
         document.querySelector('.easteregg-image').appendChild(anchor);
     });
 </script>
 {% endblock %}
-
