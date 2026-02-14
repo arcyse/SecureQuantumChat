@@ -691,10 +691,10 @@ def terminate_room():
         print(f'Room {room} has been terminated by {name}')
 
 # Get the host and port from environment variables
-host = os.environ.get('HOST', '0.0.0.0')  # Default to 0.0.0.0
-port = int(os.environ.get('PORT', 8000))  # Default to 8000
+host = os.environ.get('HOST', '0.0.0.0')
+port = int(os.environ.get('PORT', 5000))
 
 if __name__ == "__main__":
-    socketio.run(app, host='10.12.3.19', port=5000, debug=True)
+    socketio.run(app, host=host, port=port, debug=True)
 
 ####################
